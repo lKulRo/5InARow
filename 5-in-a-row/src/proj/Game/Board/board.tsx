@@ -9,34 +9,29 @@ export default function Board() {
   const [xIsNext, setXIsNext] = useState(true);
   const [squares, setSquares] = useState(Array<TicTacToeInput>(9).fill(""));
   const params = useParams<{ lobbyId: string }>();
-  const { gameEvents, startGame } = Connector();
+  const { gameEvents, placePiece} = Connector();
   const [enoughPlayer, setEnoughPlayer] = useState(false);
 
   useEffect(() => {
     const handleBoardInit = (board: Array<TicTacToeInput>) => {
-      // console.log(groupss);
-      // setGroups(groupss);
       setSquares(board);
       setEnoughPlayer(true);
     };
     const handleEnoughPlayer = () => {
       setEnoughPlayer(false)
     };
-    gameEvents(handleBoardInit, handleEnoughPlayer);
+    const handlePiecePlaced = (board: Array<TicTacToeInput>) => {
+      setSquares(board);
+    };
+    gameEvents(handleBoardInit, handleEnoughPlayer, handlePiecePlaced);
   });
 
   function handleClick(i: number) {
     if (squares[i] || calculateWinner(squares)) {
       return;
     }
-    const nextSquares = squares.slice();
-    if (xIsNext) {
-      nextSquares[i] = "X";
-    } else {
-      nextSquares[i] = "O";
-    }
-    setSquares(nextSquares);
     setXIsNext(!xIsNext);
+    placePiece(i, xIsNext ? "X": "O", params.lobbyId ?? "")
   }
 
   const winner = calculateWinner(squares);

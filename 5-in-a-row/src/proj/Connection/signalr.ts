@@ -5,11 +5,12 @@ class Connector {
   private connection: signalR.HubConnection;
   public events: (
     onGetGroups: (group: Array<Group>) => void,
-    onClientJoined: (username: string) => void,
+    onClientJoined: (username: string) => void
   ) => void;
   public gameEvents: (
-    onBoardInit:(board: Array<TicTacToeInput>) => void,
-    onEnoughPlayer:() => void
+    onBoardInit: (board: Array<TicTacToeInput>) => void,
+    onEnoughPlayer: () => void,
+    onPiecePlaced: (board: Array<TicTacToeInput>) => void
   ) => void;
   static instance: Connector;
   constructor() {
@@ -26,12 +27,15 @@ class Connector {
         onClientJoined(username);
       });
     };
-    this.gameEvents = (onBoardInit, onEnoughPlayer) => {
+    this.gameEvents = (onBoardInit, onEnoughPlayer, onPiecePlaced) => {
       this.connection.on("BoardInit", (board: Array<TicTacToeInput>) => {
         onBoardInit(board);
       });
       this.connection.on("NotEnoughPlayer", () => {
         onEnoughPlayer();
+      });
+      this.connection.on("PiecePlaced", (board: Array<TicTacToeInput>) => {
+        onPiecePlaced(board);
       });
     };
   }
@@ -50,11 +54,24 @@ class Connector {
       .invoke("StartGame", groupName)
       .then(() => console.log("Trying to start Game"));
   };
-  public getGroups = () => {
-    this.connection.invoke("GetGroups").then(() => console.log("Getting Groups"));
+  public placePiece = (
+    field: number,
+    piece: TicTacToeInput,
+    groupName: string
+  ) => {
+    this.connection
+      .invoke("PlacePiece", field, piece, groupName)
+      .then(() => console.log("Place Piece"));
   };
-  public registerGroup = (groupName: string) =>{
-    this.connection.invoke("RegisterGroup", groupName).then(() => console.log("Register Group"));
+  public getGroups = () => {
+    this.connection
+      .invoke("GetGroups")
+      .then(() => console.log("Getting Groups"));
+  };
+  public registerGroup = (groupName: string) => {
+    this.connection
+      .invoke("RegisterGroup", groupName)
+      .then(() => console.log("Register Group"));
   };
   public static getInstance(): Connector {
     if (!Connector.instance) Connector.instance = new Connector();

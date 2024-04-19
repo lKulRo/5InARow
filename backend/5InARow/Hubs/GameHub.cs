@@ -6,7 +6,7 @@ public class GameHub : Hub
 {
     private static List<Group> groups = new List<Group>();
     private static List<Client> clients = new List<Client>();
-    
+
     public async Task NewMessage(string username, string message)
     {
         Console.WriteLine(message);
@@ -82,15 +82,20 @@ public class GameHub : Hub
         {
             await Clients.All.SendAsync("BoardInit", group.Board);
         }
-        else {
+        else
+        {
             await Clients.All.SendAsync("NotEnoughPLayer");
         }
     }
 
-    public async Task PlacePiece(int boardField, string piece, Group group)
+    public async Task PlacePiece(int boardField, string piece, string groupName)
     {
-        group.Board[boardField] = piece;
-        await Clients.All.SendAsync("PiecePlaced");
+        Group? group = groups.SingleOrDefault(x => x.GroupName == groupName);
+        if (group != null)
+        {
+            group.Board[boardField] = piece;
+            await Clients.All.SendAsync("PiecePlaced", group.Board);
+        }
     }
 
 }
