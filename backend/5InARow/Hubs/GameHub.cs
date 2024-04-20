@@ -36,8 +36,6 @@ public class GameHub : Hub
             clients.Add(client);
         }
         client.Username = username;
-        //Console.WriteLine("adding " + username);
-        //clients.ForEach(x => Console.WriteLine(x.ConnectionId + " "+ x.Username)); 
         await Clients.Caller.SendAsync("clientJoined", username);
     }
 
@@ -68,10 +66,6 @@ public class GameHub : Hub
                 await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
             }
         }
-        //Console.WriteLine("ClientLengt " + clients.Count());
-        //clients.ForEach(x => Console.WriteLine(x.ConnectionId, x.Username));
-        //Console.WriteLine(client);
-        //Console.WriteLine(groups.Count());
         await GetGroups();
     }
 
@@ -88,13 +82,25 @@ public class GameHub : Hub
         }
     }
 
-    public async Task PlacePiece(int boardField, string piece, string groupName)
+    public async Task PlacePiece(int boardField, string groupName)
     {
         Group? group = groups.SingleOrDefault(x => x.GroupName == groupName);
         if (group != null)
         {
-            group.Board[boardField] = piece;
-            await Clients.All.SendAsync("PiecePlaced", group.Board);
+            var player1 = group.Clients[0].ConnectionId == Context.ConnectionId;
+            var player2 = group.Clients[1].ConnectionId == Context.ConnectionId;
+            if (player1 && group.player1Turn)
+            {
+                group.Board[boardField] = "X";
+                group.player1Turn = !group.player1Turn;
+                await Clients.All.SendAsync("PiecePlaced", group.Board, group.player1Turn);
+            }
+            if (!(!player2 || group.player1Turn))
+            {
+                group.Board[boardField] = "O";
+                group.player1Turn = !group.player1Turn;
+                await Clients.All.SendAsync("PiecePlaced", group.Board, group.player1Turn);
+            }
         }
     }
 
@@ -107,6 +113,8 @@ public class Group
     public List<Client> Clients { get; } = new List<Client>();
 
     public string[] Board { get; } = new string[9];
+
+    public Boolean player1Turn { get; set; } = true;
 }
 public class Client
 {

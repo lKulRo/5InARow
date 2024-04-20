@@ -20,8 +20,9 @@ export default function Board() {
     const handleEnoughPlayer = () => {
       setEnoughPlayer(false)
     };
-    const handlePiecePlaced = (board: Array<TicTacToeInput>) => {
+    const handlePiecePlaced = (board: Array<TicTacToeInput>, player1Turn: boolean) => {
       setSquares(board);
+      setXIsNext(player1Turn);
     };
     gameEvents(handleBoardInit, handleEnoughPlayer, handlePiecePlaced);
   });
@@ -30,8 +31,7 @@ export default function Board() {
     if (squares[i] || calculateWinner(squares)) {
       return;
     }
-    setXIsNext(!xIsNext);
-    placePiece(i, xIsNext ? "X": "O", params.lobbyId ?? "")
+    placePiece(i, params.lobbyId ?? "")
   }
 
   const winner = calculateWinner(squares);

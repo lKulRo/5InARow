@@ -10,7 +10,7 @@ class Connector {
   public gameEvents: (
     onBoardInit: (board: Array<TicTacToeInput>) => void,
     onEnoughPlayer: () => void,
-    onPiecePlaced: (board: Array<TicTacToeInput>) => void
+    onPiecePlaced: (board: Array<TicTacToeInput>, player1Turn: boolean) => void
   ) => void;
   static instance: Connector;
   constructor() {
@@ -34,9 +34,12 @@ class Connector {
       this.connection.on("NotEnoughPlayer", () => {
         onEnoughPlayer();
       });
-      this.connection.on("PiecePlaced", (board: Array<TicTacToeInput>) => {
-        onPiecePlaced(board);
-      });
+      this.connection.on(
+        "PiecePlaced",
+        (board: Array<TicTacToeInput>, player1Turn: boolean) => {
+          onPiecePlaced(board, player1Turn);
+        }
+      );
     };
   }
   public newMessage = (username: string, messages: string) => {
@@ -54,13 +57,9 @@ class Connector {
       .invoke("StartGame", groupName)
       .then(() => console.log("Trying to start Game"));
   };
-  public placePiece = (
-    field: number,
-    piece: TicTacToeInput,
-    groupName: string
-  ) => {
+  public placePiece = (field: number, groupName: string) => {
     this.connection
-      .invoke("PlacePiece", field, piece, groupName)
+      .invoke("PlacePiece", field, groupName)
       .then(() => console.log("Place Piece"));
   };
   public getGroups = () => {
