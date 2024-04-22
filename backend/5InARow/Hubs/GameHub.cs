@@ -4,8 +4,8 @@ namespace _5InARow.Hubs;
 
 public class GameHub : Hub
 {
-    private static List<Group> groups = new List<Group>();
-    private static List<Client> clients = new List<Client>();
+    private static readonly List<Group> groups = [];
+    private static readonly List<Client> clients = [];
 
     public async Task NewMessage(string username, string message)
     {
