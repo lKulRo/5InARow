@@ -7,34 +7,45 @@ import Connector from "../../Connection/signalr";
 
 export default function Board() {
   const [xIsNext, setXIsNext] = useState(true);
-  const [squares, setSquares] = useState(Array<TicTacToeInput>(9).fill(""));
+  const [squares, setSquares] = useState(Array<Array<TicTacToeInput>>);
   const params = useParams<{ lobbyId: string }>();
-  const { gameEvents, placePiece} = Connector();
+  const { gameEvents, placePiece } = Connector();
   const [enoughPlayer, setEnoughPlayer] = useState(false);
+  const [winner, setWinner] = useState<string | null>(null);
 
   useEffect(() => {
-    const handleBoardInit = (board: Array<TicTacToeInput>) => {
+    const handleBoardInit = (board: Array<Array<TicTacToeInput>>) => {
       setSquares(board);
       setEnoughPlayer(true);
     };
     const handleEnoughPlayer = () => {
-      setEnoughPlayer(false)
+      setEnoughPlayer(false);
     };
-    const handlePiecePlaced = (board: Array<TicTacToeInput>, player1Turn: boolean) => {
+    const handlePiecePlaced = (
+      board: Array<Array<TicTacToeInput>>,
+      player1Turn: boolean
+    ) => {
       setSquares(board);
       setXIsNext(player1Turn);
     };
-    gameEvents(handleBoardInit, handleEnoughPlayer, handlePiecePlaced);
+    const handleWinner = (winnerName: string) => {
+      setWinner(winnerName);
+    };
+    gameEvents(
+      handleBoardInit,
+      handleEnoughPlayer,
+      handlePiecePlaced,
+      handleWinner
+    );
   });
 
-  function handleClick(i: number) {
-    if (squares[i] || calculateWinner(squares)) {
+  function handleClick(x: number, y: number) {
+    if (squares[y][x] || winner) {
       return;
     }
-    placePiece(i, params.lobbyId ?? "")
+    placePiece(x, y, params.lobbyId ?? "");
   }
 
-  const winner = calculateWinner(squares);
   let status;
 
   if (winner) {
@@ -50,6 +61,22 @@ export default function Board() {
       return <h2>Waiting for second player</h2>;
     }
   }
+  function BoardField() {
+    return squares.map((row, y_index) => {
+      return (
+        <div className="board-row">
+          {row.map((sqaure, x_index) => {
+            return (
+              <Square
+                value={sqaure}
+                onSquareClick={() => handleClick(x_index, y_index)}
+              />
+            );
+          })}
+        </div>
+      );
+    });
+  }
 
   return (
     <>
@@ -57,42 +84,8 @@ export default function Board() {
       <GameStatusBar />
       <div className="status">{status}</div>
       <div className="board">
-        <div className="board-row">
-          <Square value={squares[0]} onSquareClick={() => handleClick(0)} />
-          <Square value={squares[1]} onSquareClick={() => handleClick(1)} />
-          <Square value={squares[2]} onSquareClick={() => handleClick(2)} />
-        </div>
-        <div className="board-row">
-          <Square value={squares[3]} onSquareClick={() => handleClick(3)} />
-          <Square value={squares[4]} onSquareClick={() => handleClick(4)} />
-          <Square value={squares[5]} onSquareClick={() => handleClick(5)} />
-        </div>
-        <div className="board-row">
-          <Square value={squares[6]} onSquareClick={() => handleClick(6)} />
-          <Square value={squares[7]} onSquareClick={() => handleClick(7)} />
-          <Square value={squares[8]} onSquareClick={() => handleClick(8)} />
-        </div>
+        <BoardField />
       </div>
     </>
   );
-}
-
-function calculateWinner(squares: TicTacToeInput[]) {
-  const lines = [
-    [0, 1, 2],
-    [3, 4, 5],
-    [6, 7, 8],
-    [0, 3, 6],
-    [1, 4, 7],
-    [2, 5, 8],
-    [0, 4, 8],
-    [2, 4, 6],
-  ];
-  for (let i = 0; i < lines.length; i++) {
-    const [a, b, c] = lines[i];
-    if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-      return squares[a];
-    }
-  }
-  return null;
 }

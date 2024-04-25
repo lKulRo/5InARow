@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using System.Collections.Generic;
+using System.Numerics;
+using Microsoft.AspNetCore.SignalR;
 
 namespace _5InARow.Hubs;
 
@@ -28,7 +30,6 @@ public class GameHub : Hub
 
     public async Task RegisterClient(string username)
     {
-        Console.WriteLine("ClientLengt " + clients.Count());
         Client? client = clients.Find(x => x.ConnectionId == Context.ConnectionId);
         if (client == null)
         {
@@ -82,28 +83,63 @@ public class GameHub : Hub
         }
     }
 
-    public async Task PlacePiece(int boardField, string groupName)
+    public async Task PlacePiece(int x_boardField, int y_boardField, string groupName)
     {
         Group? group = groups.SingleOrDefault(x => x.GroupName == groupName);
         if (group != null)
         {
             var player1 = group.Clients[0].ConnectionId == Context.ConnectionId;
             var player2 = group.Clients[1].ConnectionId == Context.ConnectionId;
-            if (player1 && group.player1Turn)
+            if (player1 && group.Player1Turn)
             {
-                group.Board[boardField] = "X";
-                group.player1Turn = !group.player1Turn;
-                await Clients.All.SendAsync("PiecePlaced", group.Board, group.player1Turn);
+                group.Board[y_boardField, x_boardField] = "X";
+                group.Player1Turn = !group.Player1Turn;
+                await Clients.All.SendAsync("PiecePlaced", group.Board, group.Player1Turn);
+                if (CalcWinner(group)) await Clients.All.SendAsync($"Winner", group.Clients[0].Username);
             }
-            if (!(!player2 || group.player1Turn))
+            if (!(!player2 || group.Player1Turn))
             {
-                group.Board[boardField] = "O";
-                group.player1Turn = !group.player1Turn;
-                await Clients.All.SendAsync("PiecePlaced", group.Board, group.player1Turn);
+                group.Board[y_boardField, x_boardField] = "O";
+                group.Player1Turn = !group.Player1Turn;
+                await Clients.All.SendAsync("PiecePlaced", group.Board, group.Player1Turn);
+                if (CalcWinner(group)) await Clients.All.SendAsync($"Winner", group.Clients[1].Username);
             }
         }
     }
-
+    private bool CalcWinner(Group group)
+    {
+        // Check rows
+        for (var column_index = 0; column_index < 3; column_index++)
+        {
+            if (group.Board[column_index, 0] != null && group.Board[column_index, 0] == group.Board[column_index, 1] && group.Board[column_index, 1] == group.Board[column_index, 2])
+            {
+                return true;
+            }
+        }
+        // Check columns
+        for (var column_index = 0; column_index < 3; column_index++)
+        {
+            if (group.Board[0, column_index] != null
+                && group.Board[0, column_index] == group.Board[1, column_index]
+                && group.Board[1, column_index] == group.Board[2, column_index])
+            {
+                return true;
+            }
+        }
+        // Check left-right diagonal
+        if (group.Board[0, 0] != null && group.Board[0, 0] == group.Board[1, 1]
+            && group.Board[1, 1] == group.Board[2, 2])
+        {
+            return true;
+        }
+        // Check right-left diagonal
+        if (group.Board[0, 2] != null && group.Board[1, 1] == group.Board[2, 0]
+            && group.Board[1, 1] == group.Board[0, 2])
+        {
+            return true;
+        }
+        return false;
+    }
 }
 
 
@@ -112,9 +148,9 @@ public class Group
     public required string GroupName { get; set; }
     public List<Client> Clients { get; } = new List<Client>();
 
-    public string[] Board { get; } = new string[9];
+    public string[,] Board { get; } = new string[3, 3];
 
-    public Boolean player1Turn { get; set; } = true;
+    public Boolean Player1Turn { get; set; } = true;
 }
 public class Client
 {

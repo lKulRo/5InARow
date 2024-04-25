@@ -1,7 +1,7 @@
 using _5InARow.Hubs;
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddSignalR();
+builder.Services.AddSignalR().AddNewtonsoftJsonProtocol();
 
 // Add services to the container.
 

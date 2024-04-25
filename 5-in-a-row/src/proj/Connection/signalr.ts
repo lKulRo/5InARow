@@ -8,9 +8,10 @@ class Connector {
     onClientJoined: (username: string) => void
   ) => void;
   public gameEvents: (
-    onBoardInit: (board: Array<TicTacToeInput>) => void,
+    onBoardInit: (board: Array<Array<TicTacToeInput>>) => void,
     onEnoughPlayer: () => void,
-    onPiecePlaced: (board: Array<TicTacToeInput>, player1Turn: boolean) => void
+    onPiecePlaced: (board: Array<Array<TicTacToeInput>>, player1Turn: boolean) => void,
+    onWinner: (winnerName:string) => void
   ) => void;
   static instance: Connector;
   constructor() {
@@ -27,8 +28,8 @@ class Connector {
         onClientJoined(username);
       });
     };
-    this.gameEvents = (onBoardInit, onEnoughPlayer, onPiecePlaced) => {
-      this.connection.on("BoardInit", (board: Array<TicTacToeInput>) => {
+    this.gameEvents = (onBoardInit, onEnoughPlayer, onPiecePlaced, onWinner) => {
+      this.connection.on("BoardInit", (board: Array<Array<TicTacToeInput>>) => {
         onBoardInit(board);
       });
       this.connection.on("NotEnoughPlayer", () => {
@@ -36,8 +37,14 @@ class Connector {
       });
       this.connection.on(
         "PiecePlaced",
-        (board: Array<TicTacToeInput>, player1Turn: boolean) => {
+        (board: Array<Array<TicTacToeInput>>, player1Turn: boolean) => {
           onPiecePlaced(board, player1Turn);
+        }
+      );
+      this.connection.on(
+        "Winner",
+        (winnerName:string) =>{
+          onWinner(winnerName);
         }
       );
     };
@@ -57,9 +64,9 @@ class Connector {
       .invoke("StartGame", groupName)
       .then(() => console.log("Trying to start Game"));
   };
-  public placePiece = (field: number, groupName: string) => {
+  public placePiece = (field_x: number, field_y:number,groupName: string) => {
     this.connection
-      .invoke("PlacePiece", field, groupName)
+      .invoke("PlacePiece", field_x, field_y, groupName)
       .then(() => console.log("Place Piece"));
   };
   public getGroups = () => {
