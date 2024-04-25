@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Numerics;
-using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.SignalR;
 
 namespace _5InARow.Hubs;
 
@@ -8,12 +6,6 @@ public class GameHub : Hub
 {
     private static readonly List<Group> groups = [];
     private static readonly List<Client> clients = [];
-
-    public async Task NewMessage(string username, string message)
-    {
-        Console.WriteLine(message);
-        await Clients.All.SendAsync("ReceiveMessage", username, message);
-    }
 
     public async Task RemoveFromGroup(string groupName)
     {
@@ -108,24 +100,18 @@ public class GameHub : Hub
     }
     private bool CalcWinner(Group group)
     {
-        // Check rows
-        for (var column_index = 0; column_index < 3; column_index++)
+        var x = new CustomArray<string>();
+        //Check row
+        if (Check(group.Board, x.GetRow))
         {
-            if (group.Board[column_index, 0] != null && group.Board[column_index, 0] == group.Board[column_index, 1] && group.Board[column_index, 1] == group.Board[column_index, 2])
-            {
-                return true;
-            }
+            return true;
         }
         // Check columns
-        for (var column_index = 0; column_index < 3; column_index++)
+        if (Check(group.Board, x.GetColumn))
         {
-            if (group.Board[0, column_index] != null
-                && group.Board[0, column_index] == group.Board[1, column_index]
-                && group.Board[1, column_index] == group.Board[2, column_index])
-            {
-                return true;
-            }
+            return true;
         }
+
         // Check left-right diagonal
         if (group.Board[0, 0] != null && group.Board[0, 0] == group.Board[1, 1]
             && group.Board[1, 1] == group.Board[2, 2])
@@ -140,15 +126,64 @@ public class GameHub : Hub
         }
         return false;
     }
+
+    private bool Check(string[,] board, Func<string[,],int, string[]> check)
+    {
+        for (var i = 0; i < board.GetLength(0); i++)
+        {
+            for (var j = 0; j < board.GetLength(1) - 4; j++)
+            {
+                
+                if (Check5inLine(check(board, i), 4, j))
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    private bool Check5inLine(string[] row, int length, int start)
+    {
+        if (length == 0)
+        {
+            return true;
+        }
+
+        if (row[start] == row[start+length] && row[start] != null)
+        {
+            return Check5inLine(row, length - 1, start);
+        }
+        else
+        {
+            return false;
+        }
+
+    }
 }
 
+public class CustomArray<T>
+{
+    public T[] GetColumn(T[,] matrix, int columnNumber)
+    {
+        return Enumerable.Range(0, matrix.GetLength(0))
+                .Select(x => matrix[x, columnNumber])
+                .ToArray();
+    }
+
+    public T[] GetRow(T[,] matrix, int rowNumber)
+    {
+        return Enumerable.Range(0, matrix.GetLength(1))
+                .Select(x => matrix[rowNumber, x])
+                .ToArray();
+    }
+}
 
 public class Group
 {
     public required string GroupName { get; set; }
     public List<Client> Clients { get; } = new List<Client>();
 
-    public string[,] Board { get; } = new string[3, 3];
+    public string[,] Board { get; } = new string[30, 30];
 
     public Boolean Player1Turn { get; set; } = true;
 }
