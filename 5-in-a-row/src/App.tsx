@@ -1,5 +1,4 @@
 import "./App.scss";
-// import Demo from "./proj/Connection/demo";
 import Board from "./proj/Game/Board/board";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Login from "./proj/Lobby/login";
@@ -23,8 +22,6 @@ const router = createBrowserRouter([
 function App() {
   return (
     <>
-      {/* <Board />
-      <Demo /> */}
       <RouterProvider router={router}></RouterProvider>
     </>
   );

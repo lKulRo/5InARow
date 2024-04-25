@@ -1,16 +1,13 @@
 import { useEffect, useState } from "react";
-import Connector, { Group } from "../Connection/signalr";
+import Connector from "../Connection/signalr";
 import { Link } from "react-router-dom";
 
 export default function Login() {
   const { events, registerClient, getGroups } = Connector();
   const [userName, setUserName] = useState("");
-  //   const [groups, setGroups] = useState(Array<Group>);
 
   useEffect(() => {
-    const handleGroups = (groupss: Array<Group>) => {
-      console.log(groupss);
-      // setGroups(groupss);
+    const handleGroups = () => {
     };
     const handleClientJoin = (username: string) => {
       setUserName(username);

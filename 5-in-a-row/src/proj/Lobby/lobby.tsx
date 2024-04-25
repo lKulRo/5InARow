@@ -9,9 +9,8 @@ export default function Login() {
   const [groupName, setGroupName] = useState("");
 
   useEffect(() => {
-    const handleGroups = (groupss: Array<Group>) => {
-      console.log(groupss);
-      setGroups(groupss);
+    const handleGroups = (groups: Array<Group>) => {
+      setGroups(groups);
     };
     const handleClientJoin = (username: string) => {
       setUserName(username);
