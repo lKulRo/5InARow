@@ -18,13 +18,15 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI(); 
     app.UseCors(x => x
-        .AllowAnyOrigin()
         .AllowAnyMethod()
         .AllowAnyHeader()
-        //.WithOrigins("http://localhost:8080")
-        //.SetIsOriginAllowed(origin => true)
+        .SetIsOriginAllowed(origin => true)
         .AllowCredentials());
 }
+app.UseCors(x => x
+        .WithOrigins("http://localhost:8080")
+        .AllowAnyHeader()
+        .AllowCredentials());
 
 app.UseAuthorization();
 
