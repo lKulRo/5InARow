@@ -1,6 +1,6 @@
 import * as signalR from "@microsoft/signalr";
 import { TicTacToeInput } from "../Game/Interfaces/interfaces";
-const URL = "http://localhost:41460/hub";
+const URL = "http://49.13.164.181:41460/hub";
 class Connector {
   private connection: signalR.HubConnection;
   public events: (
