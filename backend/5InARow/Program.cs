@@ -16,10 +16,13 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI(); app.UseCors(x => x
+    app.UseSwaggerUI(); 
+    app.UseCors(x => x
+        .AllowAnyOrigin()
         .AllowAnyMethod()
         .AllowAnyHeader()
-        .SetIsOriginAllowed(origin => true)
+        //.WithOrigins("http://localhost:8080")
+        //.SetIsOriginAllowed(origin => true)
         .AllowCredentials());
 }
 
