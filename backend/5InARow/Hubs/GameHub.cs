@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using _5InARow.Helper;
+using _5InARow.Model;
+using Microsoft.AspNetCore.SignalR;
 
 namespace _5InARow.Hubs;
 
@@ -199,34 +201,7 @@ public class GameHub : Hub
     }
 }
 
-public class CustomArray<T>
-{
-    public T[] GetColumn(T[,] matrix, int columnNumber)
-    {
-        return Enumerable.Range(0, matrix.GetLength(0))
-                .Select(x => matrix[x, columnNumber])
-                .ToArray();
-    }
 
-    public T[] GetRow(T[,] matrix, int rowNumber)
-    {
-        return Enumerable.Range(0, matrix.GetLength(1))
-                .Select(x => matrix[rowNumber, x])
-                .ToArray();
-    }
-}
 
-public class Group
-{
-    public required string GroupName { get; set; }
-    public List<Client> Clients { get; } = new List<Client>();
 
-    public string[,] Board { get; } = new string[30, 30];
 
-    public Boolean Player1Turn { get; set; } = true;
-}
-public class Client
-{
-    public required string ConnectionId { get; set; }
-    public required string Username { get; set; }
-}
