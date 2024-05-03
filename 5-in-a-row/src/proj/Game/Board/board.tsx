@@ -10,7 +10,7 @@ export default function Board() {
   const [xIsNext, setXIsNext] = useState(true);
   const [squares, setSquares] = useState(Array<Array<TicTacToeInput>>);
   const params = useParams<{ lobbyId: string }>();
-  const { gameEvents, placePiece } = Connector();
+  const { gameEvents, placePiece, restartGame } = Connector();
   const [enoughPlayer, setEnoughPlayer] = useState(false);
   const [winner, setWinner] = useState<string | null>(null);
 
@@ -18,12 +18,15 @@ export default function Board() {
     const handleBoardInit = (board: Array<Array<TicTacToeInput>>) => {
       setSquares(board);
       setEnoughPlayer(true);
+      setWinner(null);
     };
     const handleEnoughPlayer = () => {
       setEnoughPlayer(false);
     };
     const handlePiecePlaced = (
-      x: number, y:number, input: TicTacToeInput,
+      x: number,
+      y: number,
+      input: TicTacToeInput,
       player1Turn: boolean
     ) => {
       squares[y][x] = input;
@@ -47,12 +50,21 @@ export default function Board() {
     placePiece(x, y, params.lobbyId ?? "");
   }
 
-  let status;
-
-  if (winner) {
-    status = "Winner: " + winner;
-  } else {
-    status = "Next player: " + (xIsNext ? "X" : "O");
+  function Status() {
+    if (winner) {
+      return (
+        <>
+          <div className="status">{"Winner: " + winner}</div>
+          <button onClick={() => restartGame(params.lobbyId ?? "")}>
+            Revanche ?
+          </button>
+        </>
+      );
+    } else {
+      return (
+        <div className="status">{"Next player: " + (xIsNext ? "X" : "O")}</div>
+      );
+    }
   }
 
   function GameStatusBar() {
@@ -83,13 +95,13 @@ export default function Board() {
     <>
       <h1>{params.lobbyId}</h1>
       <GameStatusBar />
-      <div className="status">{status}</div>
-      <div className="board" onContextMenu={(e)=> e.preventDefault()}>
+      <Status/>
+      <div className="board" onContextMenu={(e) => e.preventDefault()}>
         <TransformWrapper
           initialScale={1}
           limitToBounds={false}
           minScale={0.005}
-          panning={{allowLeftClickPan : false}}
+          panning={{ allowLeftClickPan: false }}
         >
           <TransformComponent>
             <BoardField />

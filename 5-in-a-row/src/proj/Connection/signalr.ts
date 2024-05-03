@@ -69,6 +69,11 @@ class Connector {
       .invoke("StartGame", groupName)
       .then(() => console.log("Trying to start Game"));
   };
+  public restartGame = (groupName: string) => {
+    this.connection
+      .invoke("RestartGame", groupName)
+      .then(() => console.log("Trying to restart Game"));
+  };
   public placePiece = (field_x: number, field_y:number,groupName: string) => {
     this.connection
       .invoke("PlacePiece", field_x, field_y, groupName)

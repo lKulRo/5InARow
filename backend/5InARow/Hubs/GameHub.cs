@@ -77,6 +77,16 @@ public class GameHub : Hub
         }
     }
 
+    public async Task RestartGame(string groupname)
+    {
+        Group? group = groups.Find(x => x.GroupName == groupname);
+        if (group != null)
+        {
+            group.Board = new string[30, 30];
+            await Clients.All.SendAsync("BoardInit", group.Board);
+        }
+    }
+
     public async Task PlacePiece(int x_boardField, int y_boardField, string groupName)
     {
         Group? group = groups.SingleOrDefault(x => x.GroupName == groupName);
