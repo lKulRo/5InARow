@@ -4,6 +4,7 @@ import "./board.scss";
 import { TicTacToeInput } from "../Interfaces/interfaces";
 import { useParams } from "react-router-dom";
 import Connector from "../../Connection/signalr";
+import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 
 export default function Board() {
   const [xIsNext, setXIsNext] = useState(true);
@@ -22,10 +23,10 @@ export default function Board() {
       setEnoughPlayer(false);
     };
     const handlePiecePlaced = (
-      board: Array<Array<TicTacToeInput>>,
+      x: number, y:number, input: TicTacToeInput,
       player1Turn: boolean
     ) => {
-      setSquares(board);
+      squares[y][x] = input;
       setXIsNext(player1Turn);
     };
     const handleWinner = (winnerName: string) => {
@@ -83,8 +84,17 @@ export default function Board() {
       <h1>{params.lobbyId}</h1>
       <GameStatusBar />
       <div className="status">{status}</div>
-      <div className="board">
-        <BoardField />
+      <div className="board" onContextMenu={(e)=> e.preventDefault()}>
+        <TransformWrapper
+          initialScale={1}
+          limitToBounds={false}
+          minScale={0.005}
+          panning={{allowLeftClickPan : false}}
+        >
+          <TransformComponent>
+            <BoardField />
+          </TransformComponent>
+        </TransformWrapper>
       </div>
     </>
   );

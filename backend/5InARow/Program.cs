@@ -24,7 +24,7 @@ if (app.Environment.IsDevelopment())
         .AllowCredentials());
 }
 app.UseCors(x => x
-        .WithOrigins("http://localhost:8080")
+        .WithOrigins("http://localhost:80")
         .WithOrigins("http://49.13.164.181")
         .WithOrigins("http://game.trungtran.de")
         .WithMethods("POST", "GET")

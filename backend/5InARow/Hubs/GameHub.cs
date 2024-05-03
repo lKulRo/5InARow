@@ -88,116 +88,159 @@ public class GameHub : Hub
             {
                 group.Board[y_boardField, x_boardField] = "X";
                 group.Player1Turn = !group.Player1Turn;
-                await Clients.All.SendAsync("PiecePlaced", group.Board, group.Player1Turn);
-                if (CalcWinner(group)) await Clients.All.SendAsync($"Winner", group.Clients[0].Username);
+                await Clients.All.SendAsync("PiecePlaced", x_boardField, y_boardField, "X", group.Player1Turn);
+                if (CalcWinner(group, x_boardField, y_boardField)) await Clients.All.SendAsync($"Winner", group.Clients[0].Username);
             }
             if (!(!player2 || group.Player1Turn))
             {
                 group.Board[y_boardField, x_boardField] = "O";
                 group.Player1Turn = !group.Player1Turn;
-                await Clients.All.SendAsync("PiecePlaced", group.Board, group.Player1Turn);
-                if (CalcWinner(group)) await Clients.All.SendAsync($"Winner", group.Clients[1].Username);
+                await Clients.All.SendAsync("PiecePlaced", x_boardField, y_boardField, "O", group.Player1Turn);
+                if (CalcWinner(group, x_boardField, y_boardField)) await Clients.All.SendAsync($"Winner", group.Clients[1].Username);
             }
         }
     }
-    private bool CalcWinner(Group group)
+    private bool CalcWinner(Group group, int x, int y)
     {
-        var x = new CustomArray<string>();
-        //Check row
-        if (Check(group.Board, x.GetRow))
+        return CheckRow(group.Board, x, y) || CheckColumn(group.Board, x, y) || CheckLRDiagonal(group.Board, x, y) || CheckRLDiagonal(group.Board, x, y);
+    }
+    private bool CheckRow(string[,] board, int x, int y)
+    {
+        var count = 1;
+        var direction = true;
+        for (var i = 1; i < 5; i++)
         {
-            return true;
-        }
-        // Check columns
-        if (Check(group.Board, x.GetColumn))
-        {
-            return true;
-        }
-
-        for (var i = 0; i < group.Board.GetLength(0); i++)
-        {
-            for (var j = 0; j < group.Board.GetLength(1); j++)
+            if (direction && board.GetLength(1) > x + i)
             {
-
-                if (group.Board[i,j] == null)
-                { continue; }
-                else
+                if (board[y, x] != board[y, x + i])
                 {
-                    //Check right-left diagonal
-                    if (CheckLRDiagonal(group.Board, j, i)) return true;
-                    //Check left-right diagonal
-                    if (CheckRLDiagonal(group.Board, j, i)) return true;
+                    direction = false;
+                    i--;
                 }
             }
-        }
-        return false;
-    }
-
-    private bool Check(string[,] board, Func<string[,], int, string[]> check)
-    {
-        for (var i = 0; i < board.GetLength(0); i++)
-        {
-            for (var j = 0; j < board.GetLength(1) - 4; j++)
+            else
             {
-
-                if (Check5inLine(check(board, i), 4, j))
+                direction = false;
+                if (x - count >= 0)
                 {
-                    return true;
+                    if (board[y, x] == board[y, x - count])
+                    {
+                        count++;
+                    }
+                    else
+                    {
+                        return false;
+                    }
                 }
+                else { return false; }
+
             }
         }
-        return false;
+        return true;
     }
-    private bool Check5inLine(string[] row, int length, int start)
+
+    private bool CheckColumn(string[,] board, int x, int y)
     {
-        if (length == 0)
+        var count = 1;
+        var direction = true;
+        for (var i = 1; i < 5; i++)
         {
-            return true;
-        }
+            if (direction && board.GetLength(0) > y + i)
+            {
+                if (board[y, x] != board[y + i, x])
+                {
+                    direction = false;
+                    i--;
+                }
+            }
+            else
+            {
+                direction = false;
+                if (y - count >= 0)
+                {
+                    if (board[y, x] == board[y - count, x])
+                    {
+                        count++;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                else { return false; }
 
-        if (row[start] == row[start + length] && row[start] != null)
-        {
-            return Check5inLine(row, length - 1, start);
+            }
         }
-        else
-        {
-            return false;
-        }
-
+        return true;
     }
+
     private bool CheckLRDiagonal(string[,] board, int x, int y)
     {
-        if (board.GetLength(0) - 4 < y)
+        var count = 1;
+        var direction = true;
+        for (var i = 1; i < 5; i++)
         {
-            return false;
+            if (direction && board.GetLength(0) > y + i && board.GetLength(1) > x + i)
+            {
+                if (board[y, x] != board[y + i, x + i])
+                {
+                    direction = false;
+                    i--;
+                }
+            }
+            else
+            {
+                direction = false;
+                if (y - count >= 0 && x - count >= 0)
+                {
+                    if (board[y, x] == board[y - count, x - count])
+                    {
+                        count++;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                else { return false; }
+
+            }
         }
-        if (board.GetLength(1) - 4 < x)
-        {
-            return false;
-        }
-        if (board[y, x] != null && board[y, x] == board[y + 1, x + 1] && board[y, x] == board[y + 2, x + 2] &&
-            board[y, x] == board[y + 3, x + 3] && board[y, x] == board[y + 4, x + 4])
-        {
-            return true;
-        }
-        return false;
+        return true;
     }
     private bool CheckRLDiagonal(string[,] board, int x, int y)
     {
-        if (y < 4 || y > board.GetLength(0))
+        var count = 1;
+        var direction = true;
+        for (var i = 1; i < 5; i++)
         {
-            return false;
+            if (direction && board.GetLength(0) > y + i && x - i >= 0)
+            {
+                if (board[y, x] != board[y + i, x - i])
+                {
+                    direction = false;
+                    i--;
+                }
+            }
+            else
+            {
+                direction = false;
+                if (y - count >= 0 && x + count < board.GetLength(1))
+                {
+                    if (board[y, x] == board[y - count, x + count])
+                    {
+                        count++;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                else { return false; }
+
+            }
         }
-        if (x < 4 || board.GetLength(1) < x)
-        {
-            return false;
-        }
-        if (board[y, x] != null && board[y, x] == board[y + 1, x - 1] && board[y, x] == board[y + 2, x - 2] &&
-            board[y, x] == board[y + 3, x - 3] && board[y, x] == board[y + 4, x - 4])
-        {
-            return true;
-        }
-        return false;
+        return true;
     }
 }
 

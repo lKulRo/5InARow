@@ -15,7 +15,7 @@ class Connector {
   public gameEvents: (
     onBoardInit: (board: Array<Array<TicTacToeInput>>) => void,
     onEnoughPlayer: () => void,
-    onPiecePlaced: (board: Array<Array<TicTacToeInput>>, player1Turn: boolean) => void,
+    onPiecePlaced: (x: number, y:number, input: TicTacToeInput, player1Turn: boolean) => void,
     onWinner: (winnerName:string) => void
   ) => void;
   static instance: Connector;
@@ -42,8 +42,8 @@ class Connector {
       });
       this.connection.on(
         "PiecePlaced",
-        (board: Array<Array<TicTacToeInput>>, player1Turn: boolean) => {
-          onPiecePlaced(board, player1Turn);
+        (x: number, y:number, input: TicTacToeInput, player1Turn: boolean) => {
+          onPiecePlaced(x,y,input, player1Turn);
         }
       );
       this.connection.on(

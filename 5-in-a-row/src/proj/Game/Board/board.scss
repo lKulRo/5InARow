@@ -6,4 +6,10 @@
 .board {
   display: grid;
   justify-content: center;
+  max-height: 75dvh;
+  max-width: 100dvh;
+  overflow: hidden;
+}
+.board-row {
+  display: flex;
 }
