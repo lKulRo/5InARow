@@ -1,38 +1,47 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { FloatingLabel, Form } from "react-bootstrap";
+import Button from "react-bootstrap/Button";
+import { useNavigate } from "react-router-dom";
 import Connector from "../Connection/signalr";
-import { Link } from "react-router-dom";
+import "./login.scss";
 
 export default function Login() {
-  const { events, registerClient, getGroups } = Connector();
-  const [userName, setUserName] = useState("");
+  const { registerClient, getGroups } = Connector();
+  const [validated, setValidated] = useState(false);
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    const handleGroups = () => {
-    };
-    const handleClientJoin = (username: string) => {
-      setUserName(username);
-    };
-    events(handleGroups, handleClientJoin);
-  });
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    const form = event.currentTarget;
+    if (form.checkValidity() === false) {
+      event.preventDefault();
+      event.stopPropagation();
+    } else {
+      registerClient(
+        (form.elements.namedItem("userName") as HTMLInputElement).value
+      );
+      getGroups();
+      navigate("/lobby");
+    }
+
+    setValidated(true);
+  };
+
   return (
     <>
-      <label>
-        Username
-        <input
-          name="userName"
-          value={userName}
-          onChange={(e) => setUserName(e.target.value)}
-        />
-      </label>
-      <Link
-        to="/lobby"
-        onClick={() => {
-          registerClient(userName);
-          getGroups();
-        }}
-      >
-        <button>Register</button>
-      </Link>
+      <h1 className="title">GOMOKU</h1>
+      <div className="name-input-field">
+        <Form noValidate validated={validated} onSubmit={handleSubmit}>
+          <FloatingLabel controlId="floatingInput" label="Username" className="name-form">
+            <Form.Control type="text" placeholder="" required name="userName" />
+            <Form.Control.Feedback type="invalid">
+              Please choose a username.
+            </Form.Control.Feedback>
+            <Button type="submit">
+              Register
+            </Button>
+          </FloatingLabel>
+        </Form>
+      </div>
     </>
   );
 }
