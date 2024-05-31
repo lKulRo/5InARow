@@ -18,7 +18,6 @@ export default function Board() {
 
   useEffect(() => {
     const click_sound = new Audio(click_sound_asset);
-    console.log("effect wtf");
     const handleBoardInit = (board: Array<Array<TicTacToeInput>>) => {
       setSquares(board);
       setEnoughPlayer(true);
