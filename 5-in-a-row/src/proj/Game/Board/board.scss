@@ -6,9 +6,24 @@
 .board {
   display: grid;
   justify-content: center;
+  // min-height: 75dvh;
+  // max-height: 85dvh;
+  min-width: 100dvw;
+  // overflow: hidden;
+  border-radius: 2px;
+  border-color: red;
+  border-style: solid;
+}
+.board-wrapper {
+  // display: grid;
+  // justify-content: center;
+  // min-height: 75dvh;
   max-height: 75dvh;
-  max-width: 100dvh;
+  // min-width: 100dvw;
   overflow: hidden;
+  border-radius: 2px;
+  border-color: red;
+  border-style: solid;
 }
 .board-row {
   display: flex;

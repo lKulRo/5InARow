@@ -5,16 +5,20 @@ import { TicTacToeInput } from "../Interfaces/interfaces";
 import { useParams } from "react-router-dom";
 import Connector from "../../Connection/signalr";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
+import click_sound_asset from "../../../assets/coin.wav";
+import { Button } from "react-bootstrap";
 
 export default function Board() {
   const [xIsNext, setXIsNext] = useState(true);
   const [squares, setSquares] = useState(Array<Array<TicTacToeInput>>);
   const params = useParams<{ lobbyId: string }>();
-  const { gameEvents, placePiece, restartGame } = Connector();
+  const { gameEvents, placePiece, restartGame} = Connector();
   const [enoughPlayer, setEnoughPlayer] = useState(false);
   const [winner, setWinner] = useState<string | null>(null);
 
   useEffect(() => {
+    const click_sound = new Audio(click_sound_asset);
+    console.log("effect wtf");
     const handleBoardInit = (board: Array<Array<TicTacToeInput>>) => {
       setSquares(board);
       setEnoughPlayer(true);
@@ -31,6 +35,7 @@ export default function Board() {
     ) => {
       squares[y][x] = input;
       setXIsNext(player1Turn);
+      click_sound.play();
     };
     const handleWinner = (winnerName: string) => {
       setWinner(winnerName);
@@ -41,7 +46,7 @@ export default function Board() {
       handlePiecePlaced,
       handleWinner
     );
-  });
+  }, [gameEvents, squares]);
 
   function handleClick(x: number, y: number) {
     if (squares[y][x] || winner) {
@@ -55,9 +60,9 @@ export default function Board() {
       return (
         <>
           <div className="status">{"Winner: " + winner}</div>
-          <button onClick={() => restartGame(params.lobbyId ?? "")}>
+          <Button onClick={() => restartGame(params.lobbyId ?? "")}>
             Revanche ?
-          </button>
+          </Button>
         </>
       );
     } else {
@@ -95,16 +100,26 @@ export default function Board() {
     <>
       <h1>{params.lobbyId}</h1>
       <GameStatusBar />
-      <Status/>
-      <div className="board" onContextMenu={(e) => e.preventDefault()}>
+      <Status />
+      <div className="board-wrapper" onContextMenu={(e) => e.preventDefault()}>
         <TransformWrapper
           initialScale={1}
           limitToBounds={false}
-          minScale={0.005}
+          minScale={0.05}
           panning={{ allowLeftClickPan: false }}
+          centerOnInit={true}
+          // minPositionX={-5000}
+          // minPositionY={-5000}
+          // maxPositionX={5000}
+          // maxPositionY={5000}
+          // centerZoomedOut={true}
+          // disablePadding={true}
+          // smooth={false}
         >
           <TransformComponent>
-            <BoardField />
+            <div className="board">
+              <BoardField />
+            </div>
           </TransformComponent>
         </TransformWrapper>
       </div>

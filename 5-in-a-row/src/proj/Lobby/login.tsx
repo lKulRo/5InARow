@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { FloatingLabel, Form } from "react-bootstrap";
-import Button from "react-bootstrap/Button";
+import { FloatingLabel, Form, Button  } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import Connector from "../Connection/signalr";
 import "./login.scss";
@@ -8,6 +7,7 @@ import "./login.scss";
 export default function Login() {
   const { registerClient, getGroups } = Connector();
   const [validated, setValidated] = useState(false);
+  const [name, setName] = useState("");
   const navigate = useNavigate();
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -16,13 +16,10 @@ export default function Login() {
       event.preventDefault();
       event.stopPropagation();
     } else {
-      registerClient(
-        (form.elements.namedItem("userName") as HTMLInputElement).value
-      );
+      registerClient(name);
       getGroups();
       navigate("/lobby");
     }
-
     setValidated(true);
   };
 
@@ -31,14 +28,23 @@ export default function Login() {
       <h1 className="title">GOMOKU</h1>
       <div className="name-input-field">
         <Form noValidate validated={validated} onSubmit={handleSubmit}>
-          <FloatingLabel controlId="floatingInput" label="Username" className="name-form">
-            <Form.Control type="text" placeholder="" required name="userName" />
+          <FloatingLabel
+            controlId="floatingInput"
+            label="Username"
+            className="name-form"
+          >
+            <Form.Control
+              type="text"
+              placeholder=""
+              required
+              name="userName"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
             <Form.Control.Feedback type="invalid">
               Please choose a username.
             </Form.Control.Feedback>
-            <Button type="submit">
-              Register
-            </Button>
+            <Button type="submit">Register</Button>
           </FloatingLabel>
         </Form>
       </div>

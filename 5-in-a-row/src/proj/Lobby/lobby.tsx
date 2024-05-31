@@ -1,12 +1,16 @@
 import { useEffect, useState } from "react";
 import Connector, { Group } from "../Connection/signalr";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { Button, FloatingLabel, Form } from "react-bootstrap";
+import './lobby.scss';
 
 export default function Login() {
   const { events, registerGroup, startGame } = Connector();
   const [userName, setUserName] = useState("");
   const [groups, setGroups] = useState(Array<Group>);
   const [groupName, setGroupName] = useState("");
+  const [validated, setValidated] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleGroups = (groups: Array<Group>) => {
@@ -27,42 +31,62 @@ export default function Login() {
           startGame(x.groupName);
         }}
       >
-        <button>{x.groupName}</button>
+        <Button>{x.groupName}</Button>
       </Link>
     </li>
   ));
 
-  function ListHeaderText(){
-    if(groups.length > 0){
-        return <h2>Lobbies:</h2>
-    }else{
-        return <h2>No open lobbies currently, try create one</h2>
+  function ListHeaderText() {
+    if (groups.length > 0) {
+      return <h2>Lobbies:</h2>;
+    } else {
+      return <h2>No open lobbies currently, try create one</h2>;
     }
   }
 
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    const form = event.currentTarget;
+    if (form.checkValidity() === false) {
+      event.preventDefault();
+      event.stopPropagation();
+    } else {
+      registerGroup(groupName);
+      startGame(groupName);
+      navigate(`/lobby/${groupName}`);
+    }
+
+    setValidated(true);
+  };
+
   return (
     <>
-      <h1>Hello {userName}</h1>
-      <label>
-        Add Groups
-        <input
-          name="groupName"
-          value={groupName}
-          onChange={(e) => setGroupName(e.target.value)}
-        />
-      </label>
+      <h1>Gomoku</h1>
+      <div className="user-area">Hello {userName}</div>
 
-      <Link
-        key={groupName}
-        to={`/lobby/${groupName}`}
-        onClick={() => {
-          registerGroup(groupName);
-          startGame(groupName);
-        }}
-      >
-        <button>Create Lobby</button>
-      </Link>
-      <ListHeaderText/>
+      <div className="group-input-field">
+        <Form noValidate validated={validated} onSubmit={handleSubmit}>
+          <FloatingLabel
+            controlId="floatingInput"
+            label="Create new group"
+            className="group-form"
+          >
+            <Form.Control
+              type="text"
+              placeholder=""
+              required
+              name="groupName"
+              value={groupName}
+              onChange={(e) => setGroupName(e.target.value)}
+            />
+            <Form.Control.Feedback type="invalid">
+              Please enter a name for a group.
+            </Form.Control.Feedback>
+            <Button type="submit">Create Group</Button>
+          </FloatingLabel>
+        </Form>
+      </div>
+
+      <ListHeaderText />
       <ul>{list}</ul>
     </>
   );

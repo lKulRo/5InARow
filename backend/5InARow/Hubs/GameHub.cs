@@ -100,6 +100,7 @@ public class GameHub : Hub
                 group.Player1Turn = !group.Player1Turn;
                 await Clients.All.SendAsync("PiecePlaced", x_boardField, y_boardField, "X", group.Player1Turn);
                 if (CalcWinner(group, x_boardField, y_boardField)) await Clients.All.SendAsync($"Winner", group.Clients[0].Username);
+                Console.WriteLine("wtf why ???");
             }
             if (!(!player2 || group.Player1Turn))
             {
@@ -107,8 +108,10 @@ public class GameHub : Hub
                 group.Player1Turn = !group.Player1Turn;
                 await Clients.All.SendAsync("PiecePlaced", x_boardField, y_boardField, "O", group.Player1Turn);
                 if (CalcWinner(group, x_boardField, y_boardField)) await Clients.All.SendAsync($"Winner", group.Clients[1].Username);
+                Console.WriteLine("wtf why ???");
             }
         }
+        
     }
     private bool CalcWinner(Group group, int x, int y)
     {

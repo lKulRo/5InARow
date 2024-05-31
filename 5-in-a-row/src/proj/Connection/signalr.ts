@@ -44,6 +44,7 @@ class Connector {
         "PiecePlaced",
         (x: number, y:number, input: TicTacToeInput, player1Turn: boolean) => {
           onPiecePlaced(x,y,input, player1Turn);
+          console.log("signlar: piece placed");
         }
       );
       this.connection.on(
