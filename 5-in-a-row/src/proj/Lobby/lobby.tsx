@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import Connector, { Group } from "../Connection/signalr";
 import { Link, useNavigate } from "react-router-dom";
-import { Button, FloatingLabel, Form } from "react-bootstrap";
-import './lobby.scss';
+import { Button, FloatingLabel, Form, ListGroup } from "react-bootstrap";
+import "./lobby.scss";
 
 export default function Login() {
   const { events, registerGroup, startGame } = Connector();
@@ -21,20 +21,28 @@ export default function Login() {
     };
     events(handleGroups, handleClientJoin);
   });
-  const list = groups.map((x) => (
-    <li>
-      <Link
-        key={x.groupName}
-        to={`/lobby/${x.groupName}`}
-        onClick={() => {
-          registerGroup(x.groupName);
-          startGame(x.groupName);
-        }}
-      >
-        <Button>{x.groupName}</Button>
-      </Link>
-    </li>
-  ));
+  
+  function GroupList() {
+    return groups.map((group) => (
+      <ListGroup horizontal>
+        <ListGroup.Item>
+          <Link
+            key={group.groupName}
+            to={group.clients.length < 2 ? `/lobby/${group.groupName}` : "#"}
+            onClick={() => {
+              registerGroup(group.groupName);
+              startGame(group.groupName);
+            }}
+          >
+            <Button disabled={group.clients.length >= 2}>
+              {group.groupName}
+            </Button>
+          </Link>
+        </ListGroup.Item>
+        <ListGroup.Item>{group.clients.length}/2</ListGroup.Item>
+      </ListGroup>
+    ));
+  }
 
   function ListHeaderText() {
     if (groups.length > 0) {
@@ -87,7 +95,7 @@ export default function Login() {
       </div>
 
       <ListHeaderText />
-      <ul>{list}</ul>
+      <GroupList />
     </>
   );
 }

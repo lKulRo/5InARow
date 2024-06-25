@@ -9,17 +9,9 @@ public class GameHub : Hub
     private static readonly List<Group> groups = [];
     private static readonly List<Client> clients = [];
 
-    public async Task RemoveFromGroup(string groupName)
-    {
-        await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
-
-        await Clients.Group(groupName).SendAsync("Send", $"{Context.ConnectionId} has left the group {groupName}.");
-    }
-
     public async Task GetGroups()
     {
-        var filteredGroups = groups.FindAll(group => group.Clients.Count() < 2);
-        await Clients.All.SendAsync("GetGroups", filteredGroups.ToArray());
+        await Clients.All.SendAsync("GetGroups", groups.ToArray());
     }
 
     public async Task RegisterClient(string username)
@@ -47,7 +39,6 @@ public class GameHub : Hub
             {
                 group = new() { GroupName = groupName };
                 group.Clients.Add(client);
-                await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
                 groups.Add(group);
             }
         }
@@ -55,19 +46,39 @@ public class GameHub : Hub
         else
         {
             var userInGroup = group.Clients.Find(x => x.ConnectionId == Context.ConnectionId);
-            if (client != null && userInGroup == null)
+            if (client != null && userInGroup == null && group.Clients.Count <2)
             {
                 group.Clients.Add(client);
-                await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
             }
         }
         await GetGroups();
     }
 
+    public override Task OnDisconnectedAsync(Exception? exception)
+    {
+        Console.WriteLine(Context.ConnectionId + "disconnected");
+        var client = clients.Single(x => x.ConnectionId == Context.ConnectionId);
+        for (int i = 0; i < groups.Count; i++)
+        {
+            //delete client from group
+            if (groups[i].Clients.Contains(client))
+            {
+                groups[i].Clients.Remove(client);
+            }
+            //delete group if there are no clients
+            if (groups[i].Clients.Count == 0) 
+            {
+                groups.RemoveAt(i);
+            }
+        }
+        clients.Remove(client);
+        return base.OnDisconnectedAsync(exception);
+    }
+
     public async Task StartGame(string groupname)
     {
         Group? group = groups.Find(x => x.GroupName == groupname);
-        if (group != null && group.Clients.Count() == 2)
+        if (group != null && group.Clients.Count == 2)
         {
             await Clients.All.SendAsync("BoardInit", group.Board);
         }
@@ -100,7 +111,6 @@ public class GameHub : Hub
                 group.Player1Turn = !group.Player1Turn;
                 await Clients.All.SendAsync("PiecePlaced", x_boardField, y_boardField, "X", group.Player1Turn);
                 if (CalcWinner(group, x_boardField, y_boardField)) await Clients.All.SendAsync($"Winner", group.Clients[0].Username);
-                Console.WriteLine("wtf why ???");
             }
             if (!(!player2 || group.Player1Turn))
             {
@@ -108,10 +118,9 @@ public class GameHub : Hub
                 group.Player1Turn = !group.Player1Turn;
                 await Clients.All.SendAsync("PiecePlaced", x_boardField, y_boardField, "O", group.Player1Turn);
                 if (CalcWinner(group, x_boardField, y_boardField)) await Clients.All.SendAsync($"Winner", group.Clients[1].Username);
-                Console.WriteLine("wtf why ???");
             }
         }
-        
+
     }
     private bool CalcWinner(Group group, int x, int y)
     {
